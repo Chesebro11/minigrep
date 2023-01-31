@@ -36,9 +36,17 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
 // If it doesn't, do nothing.
 
 pub fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
+    let mut results = Vec::new();
+    // line method handles line by line iteration of strings
     for line in contents.lines() {
-        // do something with line
+        // if line contains query do something
+        if line.contains(query) {
+            // store the lines that match so we can return them
+            results.push(line);
+        }
     }
+
+    results
 }
 
 // Creating a failing test for the search function I wish I had
