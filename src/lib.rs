@@ -1,10 +1,13 @@
 // Move over LIB logic to this file
 use std::error::Error;
 use std::fs;
+use std::env;
 
 pub struct Config {
     pub query: String,
     pub file_path: String,
+    // adding configuration option to switch between case sensitive search
+    pub ignore_case: bool,
 }
 
 impl Config {
@@ -16,26 +19,28 @@ impl Config {
         let query = args[1].clone();
         let file_path = args[2].clone();
 
-        Ok(Config { query, file_path })
+        // Checking for any value in an environment variable named Ignore_Case
+        let ignore_case = env::var("IGNORE_CASE").is_ok();
+
+        Ok(Config { query, file_path, ignore_case })
     }
 }
 
 pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     let contents = fs::read_to_string(config.file_path)?;
 
-    for line in search(&config.query, &contents) {
+    // if else statement to determine if running case sensitive or not, if yes run case sesitive function, if not run saerch function
+    let results = if config.ignore_case {
+        search_case_insensitive(&config.query, &contents)
+    } else {
+        search(&config.query, &contents)
+    };
+    for line in results {
         println!("{line}");
     }
 
     Ok(())
 }
-
-// Defining just enough of the search function so our test will compile
-// In order to pass the test i need to:
-// Iterate through each line of the contents.
-// Check whether the line contains our query string
-// If it does, add it to the list of values we're returning.
-// If it doesn't, do nothing.
 
 pub fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
     let mut results = Vec::new();
